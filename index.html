@@ -128,7 +128,6 @@
         }
         .social-btn:active, .quotex-btn:active { opacity: 0.8; }
         .btn-tiktok { background: linear-gradient(135deg, #000000, var(--tiktok-color)); border: 1px solid #333; }
-        .btn-wa-channel { background: #075e54; border: 1px solid #0b665a; }
         .btn-wa-chat { background: var(--whatsapp-color); color: #000; }
 
         /* 🔒 VIP Verification Overlay Popup CSS 🔒 */
@@ -148,7 +147,6 @@
         .modal-title { font-size: 18px; font-weight: bold; color: var(--accent-gold); text-align: center; letter-spacing: 0.5px; }
         .modal-text { font-size: 12px; color: #cbd5e1; line-height: 1.4; text-align: center; }
         
-        /* अलग-अलग बॉक्सेस की स्टाइल */
         .promo-box { border: 2px dashed #00e676; background: rgba(0, 230, 118, 0.03); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; }
         .option-box { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; }
         .box-title { font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--accent-gold); display: flex; justify-content: space-between; }
@@ -258,12 +256,9 @@
     <div class="social-section">
         <div class="social-title">🔗 Official Channels & Support</div>
         
-        <a href="YOUR_TIKTOK_LINK_HERE" target="_blank" class="social-btn btn-tiktok">
+        <!-- 🎵 आपका अपडेटेड टिकटॉक लिंक -->
+        <a href="https://vt.tiktok.com/ZSXFVqKnH/" target="_blank" class="social-btn btn-tiktok">
             🎵 Follow on TikTok
-        </a>
-        
-        <a href="YOUR_WHATSAPP_CHANNEL_LINK_HERE" target="_blank" class="social-btn btn-wa-channel">
-            📢 Join WhatsApp Channel
         </a>
         
         <a href="https://wa.me/923133119500?text=Hello%20Sindhi%20Trader,%20I%20need%20help%20with%20the%20bot!" target="_blank" class="social-btn btn-wa-chat">
@@ -362,7 +357,7 @@
         const traderId = document.getElementById("traderIdInput").value.trim();
         const txId = document.getElementById("paymentTxInput").value.trim();
 
-        // 1. सबसे पहले अलग बने प्रोमो कोड बॉक्स की चेकिंग
+        // 1. प्रोमो कोड बॉक्स की चेकिंग
         if (promoInput === SECRET_PROMO) {
             isVipUnlocked = true;
             closeVipGate();
@@ -374,7 +369,7 @@
             return;
         }
 
-        // 2. बाकी दोनों नॉर्मल एफीलिएट और पेमेंट वेरिफिकेशन चेकिंग
+        // 2. एफीलिएट और पेमेंट वेरिफिकेशन चेकिंग
         if (!traderId && !txId) {
             alert("कृपया प्रोमो कोड दर्ज करें, कोटेक्स आईडी भरें या $20 पेमेंट की TxID भरें!");
             return;
