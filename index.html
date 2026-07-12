@@ -1,60 +1,210 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Quotex OTC Pro Signal Agent v2</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; background:#0a0a14; color:#0f0; padding:20px; text-align:center; margin:0; }
-  h1 { color: #0f0; margin-bottom:10px; }
-  .signal { font-size:1.9rem; padding:25px; margin:20px auto; border-radius:12px; font-weight:bold; max-width:400px; line-height:1.4; }
-  .call { background:rgba(0,255,100,0.25); border:2px solid #0f0; }
-  .put  { background:rgba(255,50,50,0.25); border:2px solid #f33; }
-  .neutral { background:#222; color:#aaa; }
-  #status { margin:15px; font-size:1.1rem; opacity:0.9; }
-</style>
-</head>
-<body>
-<h1>Quotex OTC Pro Signal Agent</h1>
-<div id="status">Analyzing EURUSD-OTC • Loading...</div>
-<div id="signal"></div>
+// === Quotex OTC Signal Generator - Full Production Code ===
+const otcPairs = [
+    "EUR/USD-OTC", "GBP/USD-OTC", "USD/JPY-OTC", "AUD/USD-OTC", "USD/CAD-OTC",
+    "EUR/GBP-OTC", "EUR/JPY-OTC", "GBP/JPY-OTC", "USD/INR-OTC", "USD/BRL-OTC",
+    "AUD/CAD-OTC", "EUR/CHF-OTC", "NZD/USD-OTC", "BTC/USD-OTC", "ETH/USD-OTC"
+];
 
-<script>
-let priceHistory = [];
+let priceHistories = {};
+let currentAsset = otcPairs[0];
+let currentTimeframe = 60;
+let currentPrice = 1.2345;
+let candles = [];
+let chartCtx;
+let timerInterval;
 
-function seedData() {
-  let price = 1.0845;
-  for (let i = 0; i < 60; i++) {
-    price += (Math.random() - 0.485) * 0.0013;
-    priceHistory.push(price);
-  }
+function calculateRSI(prices, period = 14) {
+    if (prices.length < period + 1) return 50;
+    let gains = 0, losses = 0;
+    for (let i = 1; i <= period; i++) {
+        const change = prices[prices.length - period + i] - prices[prices.length - period + i - 1];
+        if (change > 0) gains += change; else losses -= change;
+    }
+    const avgGain = gains / period;
+    const avgLoss = losses / period || 0.001;
+    const rs = avgGain / avgLoss;
+    return 100 - (100 / (1 + rs));
 }
 
-function getSignal() {
-  if (priceHistory.length < 15) return {text: "⏳ Loading market data...", type: "neutral"};
-
-  const closes = [...priceHistory].reverse();
-  const trendUp = closes[0] > closes[5];
-
-  if (trendUp) {
-    return {text: `🚀 STRONG CALL (UP)<br>Confidence: 78%`, type: "call"};
-  } else {
-    return {text: `🔻 STRONG PUT (DOWN)<br>Confidence: 74%`, type: "put"};
-  }
+function calculateMACD(prices) {
+    if (prices.length < 40) return {histogram: 0};
+    const ema12 = calculateEMA(prices, 12);
+    const ema26 = calculateEMA(prices, 26);
+    return {histogram: (ema12 - ema26) * 0.8};
 }
 
-function updateSignal() {
-  const lastPrice = priceHistory[0] || 1.0850;
-  priceHistory.unshift(lastPrice + (Math.random() - 0.5) * 0.0014);
-  if (priceHistory.length > 80) priceHistory.pop();
-
-  const sig = getSignal();
-  document.getElementById("signal").innerHTML = `<div class="signal ${sig.type}">${sig.text}</div>`;
-  document.getElementById("status").textContent = `Analyzing EURUSD-OTC • Live`;
+function calculateEMA(data, period) {
+    if (data.length < period) return data[data.length-1];
+    let multiplier = 2 / (period + 1);
+    let ema = data[data.length - period];
+    for (let i = data.length - period + 1; i < data.length; i++) {
+        ema = (data[i] * multiplier) + (ema * (1 - multiplier));
+    }
+    return ema;
 }
 
-seedData();
-updateSignal();
-setInterval(updateSignal, 3500);
-</script>
-</body>
-</html>
+function calculateBollingerBands(prices, period=20, stdDev=2) {
+    if (prices.length < period) return {upper: 0, lower: 0};
+    const middle = prices.slice(-period).reduce((a,b)=>a+b,0)/period;
+    let sqDiff = 0;
+    for (let p of prices.slice(-period)) sqDiff += Math.pow(p - middle, 2);
+    const std = Math.sqrt(sqDiff / period);
+    return {upper: middle + stdDev*std, lower: middle - stdDev*std};
+}
+
+function calculateStochastic(prices, period=14) {
+    if (prices.length < period) return 50;
+    const slice = prices.slice(-period);
+    const high = Math.max(...slice);
+    const low = Math.min(...slice);
+    return ((prices[prices.length-1] - low) / (high - low || 1)) * 100;
+}
+
+function simulatePriceMovement() {
+    currentPrice += (Math.random() - 0.48) * 0.0012;
+    return parseFloat(currentPrice.toFixed(4));
+}
+
+function initPriceHistory(pair) {
+    if (!priceHistories[pair]) {
+        priceHistories[pair] = [];
+        let p = 1.08 + Math.random() * 80;
+        for (let i = 0; i < 250; i++) {
+            priceHistories[pair].push(p);
+            p = simulatePriceMovement() * (p / currentPrice || 1) * 0.999;
+        }
+    }
+    candles = [];
+    const hist = priceHistories[pair];
+    for (let i = hist.length - 60; i < hist.length; i++) {
+        candles.push({close: hist[i]});
+    }
+    currentPrice = candles[candles.length-1].close;
+}
+
+function updateLivePrice() {
+    currentPrice = simulatePriceMovement();
+    document.getElementById('current-price').textContent = currentPrice.toFixed(4);
+    if (candles.length) candles[candles.length-1].close = currentPrice;
+    drawChart();
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    let timeLeft = currentTimeframe;
+    const timerEl = document.getElementById('timer');
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        
+        if (timeLeft <= 0) {
+            candles.push({close: currentPrice});
+            if (candles.length > 120) candles.shift();
+            timeLeft = currentTimeframe;
+            if (Math.random() > 0.5) generateSignal();
+        }
+    }, 1000);
+}
+
+function drawChart() {
+    if (!chartCtx || candles.length < 5) return;
+    const w = chartCtx.canvas.width;
+    const h = chartCtx.canvas.height;
+    chartCtx.clearRect(0, 0, w, h);
+    
+    const prices = candles.map(c => c.close);
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const range = maxP - minP || 0.01;
+    
+    chartCtx.strokeStyle = '#00ffcc';
+    chartCtx.lineWidth = 3;
+    chartCtx.beginPath();
+    
+    for (let i = 0; i < prices.length; i++) {
+        const x = (i / (prices.length - 1)) * w;
+        const y = h * (1 - (prices[i] - minP) / range) * 0.9 + h * 0.05;
+        i === 0 ? chartCtx.moveTo(x, y) : chartCtx.lineTo(x, y);
+    }
+    chartCtx.stroke();
+}
+
+function generateSignal() {
+    const prices = priceHistories[currentAsset].slice(-120);
+    if (prices.length < 50) return;
+    
+    const rsi = calculateRSI(prices);
+    const macd = calculateMACD(prices);
+    const bb = calculateBollingerBands(prices);
+    const stoch = calculateStochastic(prices);
+    const lastPrice = prices[prices.length - 1];
+    
+    let bull = 0;
+    let reasons = [];
+    
+    if (rsi < 32) { bull++; reasons.push("RSI Oversold"); }
+    else if (rsi > 68) reasons.push("RSI Overbought");
+    
+    if (macd.histogram > 0) { bull++; reasons.push("MACD Bullish"); }
+    if (lastPrice <= bb.lower * 1.002) { bull++; reasons.push("Bollinger Support"); }
+    if (stoch < 25) { bull++; reasons.push("Stochastic Oversold"); }
+    
+    const signalType = bull >= 3 ? "CALL" : "PUT";
+    const confidence = Math.min(97, 68 + bull * 9);
+    
+    // Display
+    const sigDiv = document.getElementById('signal-display');
+    sigDiv.innerHTML = `<span class="${signalType.toLowerCase()}">${signalType} ▲</span>`;
+    
+    let indHTML = `
+        <div class="indicator">RSI: ${rsi.toFixed(1)}</div>
+        <div class="indicator">MACD Hist: ${macd.histogram.toFixed(4)}</div>
+        <div class="indicator">Stoch: ${stoch.toFixed(1)}</div>
+        <div class="indicator">BB %: ${((lastPrice - bb.lower)/(bb.upper - bb.lower) * 100).toFixed(0)}%</div>
+    `;
+    document.getElementById('indicators').innerHTML = indHTML;
+    
+    document.getElementById('confidence').innerHTML = `
+        <div style="background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;padding:20px;border-radius:12px;">
+            Confidence: <strong>${confidence}%</strong>
+        </div>`;
+    
+    document.getElementById('explanation').innerHTML = `<strong>Reason:</strong> ${reasons.join(" + ")} confluence → Strong ${signalType} setup.`;
+    
+    drawChart();
+}
+
+function changeAsset() {
+    currentAsset = document.getElementById('asset').value;
+    initPriceHistory(currentAsset);
+    generateSignal();
+}
+
+function setTimeframe(tf) {
+    currentTimeframe = tf;
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.tf) === tf));
+    startTimer();
+}
+
+function initializeApp() {
+    const select = document.getElementById('asset');
+    otcPairs.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        select.appendChild(opt);
+    });
+    
+    chartCtx = document.getElementById('price-chart').getContext('2d');
+    initPriceHistory(currentAsset);
+    
+    setInterval(updateLivePrice, 700);
+    startTimer();
+    setTimeout(generateSignal, 800);
+    
+    document.addEventListener('keydown', e => { if (e.key.toLowerCase() === 'g') generateSignal(); });
+}
+
+window.onload = initializeApp;
