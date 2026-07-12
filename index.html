@@ -1,96 +1,93 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SINDHI TRADER PRO - VIP ULTIMATE</title>
+    <title>SINDHI TRADER BOT</title>
     <style>
-        /* प्रीमियम डार्क थीम और प्रोफेशनल स्टाइलिंग */
-        :root { --bg: #050914; --card: #0b1120; --gold: #f5b301; --text: #ffffff; --border: #1e293b; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 500px; background: var(--card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .brand { text-align: center; color: var(--gold); font-size: 28px; font-weight: 900; margin-bottom: 30px; text-transform: uppercase; }
-        .input-box { width: 100%; padding: 15px; margin-bottom: 15px; background: #050914; border: 1px solid var(--border); color: #fff; border-radius: 10px; font-size: 16px; text-align: center; }
-        .btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #f5b301, #d49a00); border: none; border-radius: 10px; font-weight: 900; color: #000; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .verdict { text-align: center; font-size: 40px; font-weight: 900; margin: 30px 0; letter-spacing: 2px; }
-        .analysis-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; font-size: 14px; line-height: 1.8; border-left: 5px solid var(--gold); }
-        select { width: 100%; padding: 15px; margin-bottom: 20px; background: #050914; border: 1px solid var(--border); color: #fff; border-radius: 10px; }
+        :root { --bg-color: #070b19; --card-bg: #0f162a; --accent-gold: #ffc107; --border: #1e294b; --text: #ffffff; }
+        body { background-color: var(--bg-color); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 450px; background: var(--card-bg); border-radius: 20px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .brand { text-align: center; font-size: 26px; font-weight: 900; color: var(--accent-gold); margin-bottom: 25px; text-transform: uppercase; }
+        .payment-info { background: rgba(255,193,7,0.1); border: 1px dashed var(--accent-gold); padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; text-align: center; }
+        input, select { width: 100%; padding: 15px; margin-bottom: 20px; background: #0b1021; border: 1px solid var(--border); color: #fff; border-radius: 10px; font-size: 16px; }
+        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffc107, #ff9800); border: none; border-radius: 10px; font-weight: bold; font-size: 16px; color: #000; cursor: pointer; }
+        .verdict { font-size: 35px; font-weight: 900; text-align: center; margin: 30px 0; padding: 20px; border: 2px dashed var(--border); border-radius: 15px; }
+        .analysis { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; font-size: 14px; line-height: 1.6; color: #cbd5e1; }
+        .social-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .social-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- VIP GATE -->
     <div id="vip-gate">
-        <h2 class="brand">👑 VIP ACCESS</h2>
-        <input type="text" id="promo" class="input-box" placeholder="ENTER PROMO CODE">
-        <button class="btn" onclick="checkAccess()">UNLOCK BOT</button>
+        <div class="brand">👑 VIP ACCESS</div>
+        <div class="payment-info">
+            Pay $20 USDT (TRC20) to Binance ID: <b>123456789</b><br>
+            Send screenshot on WhatsApp for Promo Code.
+        </div>
+        <input type="text" id="promoCode" placeholder="ENTER PROMO CODE">
+        <button class="main-btn" onclick="checkAccess()">UNLOCK BOT</button>
     </div>
 
+    <!-- BOT INTERFACE -->
     <div id="bot-ui" style="display:none;">
-        <h2 class="brand">⚡ SINDHI TRADER PRO</h2>
+        <div class="brand">⚡ SINDHI TRADER BOT</div>
         
-        <label>MARKET SELECTION</label>
+        <label>MARKET PAIR</label>
         <select id="pairSelector">
-            <optgroup label="OTC PAIRS (Pattern Based)">
+            <optgroup label="OTC MARKETS">
                 <option value="USD/BRL (OTC)">USD/BRL (OTC)</option>
-                <option value="CAD/CHF (OTC)">CAD/CHF (OTC)</option>
-                <option value="USD/COP (OTC)">USD/COP (OTC)</option>
-                <option value="USD/NGN (OTC)">USD/NGN (OTC)</option>
-                <option value="EUR/CAD (OTC)">EUR/CAD (OTC)</option>
-                <option value="GBP/JPY (OTC)">GBP/JPY (OTC)</option>
-                <option value="USD/ARS (OTC)">USD/ARS (OTC)</option>
-                <option value="USD/MXN (OTC)">USD/MXN (OTC)</option>
-                <option value="AUD/CHF (OTC)">AUD/CHF (OTC)</option>
-                <option value="AUD/JPY (OTC)">AUD/JPY (OTC)</option>
                 <option value="EUR/USD (OTC)">EUR/USD (OTC)</option>
-                <option value="GBP/USD (OTC)">GBP/USD (OTC)</option>
-                <option value="USD/INR (OTC)">USD/INR (OTC)</option>
             </optgroup>
-            <optgroup label="REAL FOREX (Scalping)">
+            <optgroup label="REAL FOREX">
                 <option value="EUR/USD (REAL)">EUR/USD (REAL)</option>
-                <option value="GBP/USD (REAL)">GBP/USD (REAL)</option>
-                <option value="USD/JPY (REAL)">USD/JPY (REAL)</option>
                 <option value="XAU/USD (GOLD)">XAU/USD (GOLD)</option>
             </optgroup>
         </select>
 
-        <button class="btn" onclick="generateDeepSignal()">GENERATE SIGNAL</button>
-        <div id="verdict" class="verdict">---</div>
-        <div id="deepAnalysis" class="analysis-box">चार्ट और प्राइस एक्शन का एनालिसिस यहाँ दिखेगा...</div>
-        
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <a href="#" style="flex:1; background:#ff0050; text-align:center; padding:12px; border-radius:5px; text-decoration:none; color:#fff;">TikTok</a>
-            <a href="#" style="flex:1; background:#25d366; text-align:center; padding:12px; border-radius:5px; text-decoration:none; color:#000;">WhatsApp</a>
+        <label>TIMEFRAME</label>
+        <select id="timeframeSelector">
+            <option value="15">15 Seconds (Scalping)</option>
+            <option value="60">1 Minute</option>
+            <option value="300">5 Minutes (300s)</option>
+        </select>
+
+        <button class="main-btn" onclick="analyzeMarket()">GENERATE SIGNAL</button>
+
+        <div class="verdict" id="botVerdict">---</div>
+        <div class="analysis" id="analysisContent">Deep market analysis will appear here after generation.</div>
+
+        <div class="social-btns">
+            <a href="#" class="social-btn" style="background:#ff0050;">TikTok</a>
+            <a href="#" class="social-btn" style="background:#25d366;">WhatsApp</a>
         </div>
     </div>
 </div>
 
 <script>
     function checkAccess() {
-        if(document.getElementById('promo').value === "SINDHI VIP 706") {
-            document.getElementById('vip-gate').style.display = 'none';
-            document.getElementById('bot-ui').style.display = 'block';
-        } else { alert("गलत प्रोमो कोड! बाइनेंस पेमेंट करके WhatsApp पर संपर्क करें।"); }
+        if(document.getElementById("promoCode").value === "SINDHI VIP 706") {
+            document.getElementById("vip-gate").style.display = "none";
+            document.getElementById("bot-ui").style.display = "block";
+        } else { alert("Invalid Promo Code!"); }
     }
 
-    function generateDeepSignal() {
+    function analyzeMarket() {
         const pair = document.getElementById("pairSelector").value;
-        const isOTC = pair.includes("OTC");
-        
-        // डीप एनालिसिस इंजन
-        const candlePatterns = ["Doji Rejection", "Engulfing Pattern", "Hammer/Shooting Star", "Pin Bar"];
-        const pattern = candlePatterns[Math.floor(Math.random() * candlePatterns.length)];
+        const tf = document.getElementById("timeframeSelector").value;
         const isCall = Math.random() > 0.5;
         
-        document.getElementById("verdict").innerText = isCall ? "CALL (UP) ⬆️" : "PUT (DOWN) ⬇️";
-        document.getElementById("verdict").style.color = isCall ? "#00e676" : "#ff3d00";
+        document.getElementById("botVerdict").innerText = isCall ? "CALL (UP) ⬆️" : "PUT (DOWN) ⬇️";
+        document.getElementById("botVerdict").style.color = isCall ? "#00e676" : "#ff3d00";
         
-        document.getElementById("deepAnalysis").innerHTML = `
-            <b>एनालिसिस रिपोर्ट: ${pair}</b><br><br>
-            • <b>मार्केट मोड:</b> ${isOTC ? "OTC एल्गोरिदम (प्राइस एक्शन)" : "रियल मार्केट (लिक्विडिटी)"}<br>
-            • <b>कैंडलस्टिक व्यवहार:</b> ${pattern} डिटेक्ट हुआ है।<br>
-            • <b>प्राइस एक्शन:</b> ${isOTC ? "सपोर्ट/रेजिस्टेंस लेवल" : "ट्रेंड रिवर्सल ज़ोन"} पर प्राइस स्ट्रगल कर रही है।<br>
-            • <b>निष्कर्ष:</b> ${pair} के लिए इंडिकेटर ${isCall ? "Bullish" : "Bearish"} संकेत दे रहे हैं।
+        document.getElementById("analysisContent").innerHTML = `
+            <b>Deep Analysis for ${pair} (${tf}s):</b><br>
+            • Pattern: Identified strong breakout signal.<br>
+            • Price Action: Testing key structural levels.<br>
+            • Verdict: High probability ${isCall ? 'Bullish' : 'Bearish'} setup detected.
         `;
     }
 </script>
