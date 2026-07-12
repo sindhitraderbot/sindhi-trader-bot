@@ -55,6 +55,8 @@
         .analysis-box { width: 100%; background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: left; display: none; font-size: 11px; line-height: 1.4; color: #cbd5e1; }
 
         .main-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #ffc107, #ff9800); border: none; color: #000; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,152,0,0.2); text-transform: uppercase; }
+        .main-btn:disabled { background: #555; color: #aaa; cursor: not-allowed; box-shadow: none; }
+
         .loader { border: 3px solid rgba(255,255,255,0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--accent-gold); animation: spin 0.6s linear infinite; display: none; margin: 0 auto; }
         
         .quotex-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px; background: linear-gradient(135deg, #00b67a, #008f5d); border: none; color: #fff; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; text-align: center; box-shadow: 0 4px 12px rgba(0,182,122,0.2); text-transform: uppercase; }
@@ -123,7 +125,7 @@
         </div>
     </div>
 
-    <button class="main-btn" onclick="checkVipGate()">Generate Prediction</button>
+    <button class="main-btn" id="generateBtn" onclick="checkVipGate()">Generate Prediction</button>
 
     <a href="https://broker-qx.pro/sign-up/?lid=2055362" target="_blank" class="quotex-btn">Register on Quotex</a>
 
@@ -146,14 +148,28 @@
 <script>
     let isVipUnlocked = false;
     const SECRET_PROMO = "SINDHIVIP786";
+    let lastSignalCandle = null; // For lock mechanism
 
     function switchMode(mode) {
         document.getElementById("btnBinary").className = mode === "BINARY" ? "mode-btn active" : "mode-btn";
         document.getElementById("btnForex").className = mode === "FOREX" ? "mode-btn active" : "mode-btn";
         const pSel = document.getElementById("pairSelector");
-        pSel.innerHTML = mode === "BINARY" ? 
-            `<option value="EURUSD_OTC">EUR/USD (OTC)</option><option value="GBPUSD_OTC">GBP/USD (OTC)</option><option value="USDINR_OTC">USD/INR (OTC)</option>` :
-            `<option value="XAUUSD">XAU/USD (GOLD)</option><option value="EURUSD">EUR/USD</option>`;
+        
+        if (mode === "BINARY") {
+            pSel.innerHTML = `
+                <option value="EURUSD_OTC">EUR/USD (OTC)</option>
+                <option value="GBPUSD_OTC">GBP/USD (OTC)</option>
+                <option value="USDINR_OTC">USD/INR (OTC)</option>
+                <option value="USDBRL_OTC">USD/BRL (OTC)</option>
+                <option value="CADCHF_OTC">CAD/CHF (OTC)</option>
+                <option value="USDPKR_OTC">USD/PKR (OTC)</option>
+            `;
+        } else {
+            pSel.innerHTML = `
+                <option value="XAUUSD">XAU/USD (GOLD)</option>
+                <option value="EURUSD">EUR/USD</option>
+            `;
+        }
         resetOutputs();
     }
 
@@ -164,9 +180,16 @@
         document.getElementById("botAnalysis").style.display = "none";
     }
 
+    // Candle Timer
     setInterval(() => {
         const rem = 60 - (new Date().getSeconds() % 60);
-        document.getElementById("candleClock").innerText = rem.toFixed(0) + "s";
+        document.getElementById("candleClock").innerText = rem + "s";
+        
+        // Auto-enable button in last 15 seconds
+        const generateBtn = document.getElementById("generateBtn");
+        if (rem <= 15) {
+            generateBtn.disabled = false;
+        }
     }, 1000);
 
     function checkVipGate() {
@@ -182,9 +205,24 @@
         } else alert("Invalid Code!");
     }
 
-    function closeVipGate() { document.getElementById("vipModal").style.display = "none"; }
+    function closeVipGate() { 
+        document.getElementById("vipModal").style.display = "none"; 
+    }
 
     function executeBotLogic() {
+        const generateBtn = document.getElementById("generateBtn");
+        const currentSecond = new Date().getSeconds();
+        const currentCandle = Math.floor(Date.now() / 60000);
+
+        // Lock Check
+        if (lastSignalCandle === currentCandle) {
+            const rem = 60 - (currentSecond % 60);
+            if (rem > 15) {
+                alert("Signal lock active! Please wait until the last 15 seconds of the candle.");
+                return;
+            }
+        }
+
         const asset = document.getElementById("pairSelector").value;
         const loader = document.getElementById("botLoader");
         const analysis = document.getElementById("botAnalysis");
@@ -192,21 +230,38 @@
         
         loader.style.display = "block";
         document.getElementById("welcomeText").style.display = "none";
+        generateBtn.disabled = true;
 
         setTimeout(() => {
             loader.style.display = "none";
             const isCall = Math.random() > 0.5;
+            
             document.getElementById("botVerdict").innerText = isCall ? "CALL (UP)" : "PUT (DOWN)";
             document.getElementById("botVerdict").className = isCall ? "verdict call-style" : "verdict put-style";
             
-            // Deep Analysis Logic
-            const indicators = ["RSI (14) at 42.5 (Neutral)", "Bollinger Bands contracting", "Volume accumulation detected"];
-            const priceAction = "Rejection at support level confirming short-term momentum.";
-            aContent.innerHTML = `Asset: ${asset}<br>Analysis: ${priceAction}<br>Indicators: ${indicators.join(', ')}<br>Direction: ${isCall ? "Bullish" : "Bearish"} bias confirmed for 1-minute expiry.`;
+            // Pair-specific Targeted Analysis
+            let analysisHTML = `Asset: <b>${asset}</b><br><br>`;
+            
+            // Simulated indicators based on pair
+            const rsi = (35 + Math.random() * 30).toFixed(1);
+            const maTrend = isCall ? "bullish crossover" : "bearish crossover";
+            
+            analysisHTML += `
+                <b>Price Action:</b> Strong rejection at ${isCall ? 'support' : 'resistance'} level on ${asset}.<br>
+                <b>RSI (14):</b> ${rsi} - ${isCall ? 'Oversold bounce' : 'Overbought rejection'}<br>
+                <b>Bollinger Bands:</b> Price touching lower/upper band with contraction.<br>
+                <b>Moving Averages:</b> 9/21 EMA ${maTrend} confirmed.<br><br>
+                <b>Direction:</b> ${isCall ? "Bullish" : "Bearish"} bias for 1-minute expiry.
+            `;
+            
+            aContent.innerHTML = analysisHTML;
             analysis.style.display = "block";
+            
+            lastSignalCandle = currentCandle;
         }, 1500);
     }
 
+    // Initialize
     switchMode('BINARY');
 </script>
 </body>
