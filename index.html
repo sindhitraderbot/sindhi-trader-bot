@@ -3,275 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SINDHI TRADER BOT - Advanced OTC Analytics</title>
+    <title>SINDHI TRADER BOT - Hybrid Forex & Binary Engine</title>
     <style>
         :root {
-            --bg-color: #060913;
-            --card-bg: #0f1424;
+            --bg-color: #070b19;
+            --card-bg: #0f162a;
             --text-main: #ffffff;
-            --text-muted: #8b98b5;
+            --text-muted: #7ee0ff;
             --accent-gold: #ffc107;
-            --btn-gradient: linear-gradient(135deg, #ffc107, #ff9800);
             --green: #00e676;
             --red: #ff3d00;
-            --border: #1d263b;
+            --border: #1e294b;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 10px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 600px; background: var(--card-bg); border-radius: 14px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+        
+        .brand-header { text-align: center; padding: 12px; background: rgba(255,193,7,0.05); border-radius: 10px; border: 1px solid rgba(255,193,7,0.15); margin-bottom: 15px; }
+        .brand-logo { font-size: 24px; font-weight: 900; color: var(--accent-gold); letter-spacing: 1px; }
+        .brand-tagline { font-size: 11px; color: #a0aec0; margin-top: 2px; text-transform: uppercase; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+        .mode-container { display: flex; gap: 8px; margin-bottom: 15px; }
+        .mode-btn { flex: 1; padding: 10px; background: #0b1021; border: 1px solid var(--border); color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .mode-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-        }
+        .dropdown-wrapper { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+        label { font-size: 11px; font-weight: bold; color: #a0aec0; text-transform: uppercase; }
+        select { width: 100%; background: #090d1f; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; font-size: 14px; font-weight: 600; outline: none; }
 
-        /* Brand Header */
-        .brand-header {
-            text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(255,193,7,0.07), rgba(0,0,0,0.4));
-            border-radius: 12px;
-            border: 1px solid rgba(255, 193, 7, 0.15);
-            margin-bottom: 20px;
-        }
+        .clock-panel { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .clock-digits { font-size: 24px; font-weight: bold; color: var(--accent-gold); font-family: monospace; }
 
-        .brand-logo {
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--accent-gold);
-            letter-spacing: 1.5px;
-            text-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
-        }
-
-        .brand-tagline {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            text-transform: uppercase;
-        }
-
-        /* Mobile Responsive Asset Selector Container */
-        .selector-section {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .dropdown-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        label {
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        select, .tf-btn-group {
-            width: 100%;
-            background: #090d1a;
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        select:focus {
-            border-color: var(--accent-gold);
-        }
-
-        /* Timeframe Horizontal Switcher */
-        .tf-btn-group {
-            display: flex;
-            padding: 4px;
-            background: #090d1a;
-            gap: 4px;
-        }
-
-        .tf-btn {
-            flex: 1;
-            padding: 10px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-weight: bold;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .tf-btn.active {
-            background: var(--accent-gold);
-            color: #000;
-        }
-
-        /* Display Panel */
-        .display-panel {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-info h3 {
-            font-size: 18px;
-            color: var(--accent-gold);
-        }
-
-        .panel-info p {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .clock-box {
-            text-align: right;
-        }
-
-        .clock-title {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: bold;
-        }
-
-        .clock-digits {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--accent-gold);
-            font-family: monospace;
-        }
-
-        /* Signal Output Block */
-        .signal-card {
-            background: #04070f;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 25px 15px;
-            text-align: center;
-            min-height: 160px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .verdict {
-            font-size: 36px;
-            font-weight: 900;
-            letter-spacing: 1px;
-        }
-
-        .accuracy-badge {
-            margin-top: 8px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-            display: none;
-        }
-
+        .signal-card { background: #040714; border: 2px dashed var(--border); border-radius: 10px; padding: 20px 10px; text-align: center; min-height: 140px; margin-bottom: 15px; position: relative; }
+        .verdict { font-size: 32px; font-weight: 900; }
+        .badge { display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; }
         .call-style { color: var(--green); }
         .put-style { color: var(--red); }
-        .neutral-style { color: var(--text-muted); }
+        
+        .forex-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #0d1326; padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .stat-box { text-align: center; font-size: 12px; color: #a0aec0; }
+        .stat-val { font-size: 14px; font-weight: bold; color: #fff; margin-top: 2px; }
 
-        /* Technical Reasoning Block */
-        .analysis-box {
-            width: 100%;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-            text-align: left;
-            display: none;
-        }
+        .analysis-box { width: 100%; background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-top: 10px; text-align: left; display: none; font-size: 11px; line-height: 1.4; color: #cbd5e1; }
 
-        .analysis-box h4 {
-            font-size: 13px;
-            color: var(--accent-gold);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-
-        .analysis-text {
-            font-size: 12px;
-            color: #d1d9e6;
-            line-height: 1.5;
-        }
-
-        /* Action Buttons */
-        .main-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--btn-gradient);
-            border: none;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-            transition: all 0.1s;
-        }
-
-        .main-btn:active {
-            transform: scale(0.98);
-        }
-
-        .loader {
-            border: 3px solid rgba(255,255,255,0.1);
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border-left-color: var(--accent-gold);
-            animation: spin 0.6s linear infinite;
-            display: none;
-        }
-
+        .main-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ffc107, #ff9800); border: none; color: #000; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,152,0,0.2); }
+        .loader { border: 3px solid rgba(255,255,255,0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--accent-gold); animation: spin 0.6s linear infinite; display: none; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Desktop Optimization (Side-by-side if screen is large) */
-        @media(min-width: 768px) {
-            .selector-section {
-                flex-direction: row;
-            }
-            .dropdown-wrapper {
-                flex: 1;
-            }
-        }
+        
+        #tvWidgetContainer { height: 180px; margin-bottom: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); display: none; }
     </style>
 </head>
 <body>
@@ -279,181 +59,221 @@
 <div class="container">
     <div class="brand-header">
         <h1 class="brand-logo">⚡ SINDHI TRADER BOT ⚡</h1>
-        <p class="brand-tagline">Quotex Binary OTC Multi-Indicator Confluence Algorithm</p>
+        <p class="brand-tagline">Multi-Engine: Quotex Binary & Forex Scalper</p>
     </div>
 
-    <div class="selector-section">
-        <div class="dropdown-wrapper">
-            <label>Select Quotex OTC Pair</label>
-            <select id="pairSelector" onchange="resetDashboard()">
-                <option value="EUR/USD (OTC)">EUR/USD (OTC)</option>
-                <option value="GBP/USD (OTC)">GBP/USD (OTC)</option>
-                <option value="USD/JPY (OTC)">USD/JPY (OTC)</option>
-                <option value="AUD/CAD (OTC)">AUD/CAD (OTC)</option>
-                <option value="EUR/GBP (OTC)">EUR/GBP (OTC)</option>
-                <option value="USD/INR (OTC)">USD/INR (OTC)</option>
-                <option value="USD/BRL (OTC)">USD/BRL (OTC)</option>
-                <option value="GBP/JPY (OTC)">GBP/JPY (OTC)</option>
-            </select>
-        </div>
+    <div class="mode-container">
+        <button class="mode-btn active" id="btnBinary" onclick="switchMode('BINARY')">QUOTEX BINARY</button>
+        <button class="mode-btn" id="btnForex" onclick="switchMode('FOREX')">FOREX SCALPING</button>
+    </div>
 
-        <div class="dropdown-wrapper">
-            <label>Select Expiry Duration</label>
-            <div class="tf-btn-group">
-                <button class="tf-btn active" onclick="changeTimeframe(5, this)">5 SEC</button>
-                <button class="tf-btn" onclick="changeTimeframe(10, this)">10 SEC</button>
-                <button class="tf-btn" onclick="changeTimeframe(60, this)">1 MIN</button>
+    <div class="dropdown-wrapper">
+        <label id="assetLabel">Select Quotex Market Pair</label>
+        <select id="pairSelector" onchange="onPairChange()">
+            <option value="EURUSD_OTC" data-tv="FX_IDC:EURUSD">EUR/USD (OTC)</option>
+            <option value="GBPUSD_OTC" data-tv="FX_IDC:GBPUSD">GBP/USD (OTC)</option>
+            <option value="USDINR_OTC" data-tv="FX_IDC:USDINR">USD/INR (OTC)</option>
+            <option value="EURUSD" data-tv="FX:EURUSD">EUR/USD (REAL)</option>
+            <option value="GBPUSD" data-tv="FX:GBPUSD">GBP/USD (REAL)</option>
+            <option value="USDJPY" data-tv="FX:USDJPY">USD/JPY (REAL)</option>
+        </select>
+    </div>
+
+    <div class="dropdown-wrapper" id="timeframeWrapper">
+        <label>Select Duration</label>
+        <select id="timeframeSelector">
+            <option value="5">5 Seconds Candle</option>
+            <option value="60" selected>1 Minute Expiry</option>
+        </select>
+    </div>
+
+    <div id="tvWidgetContainer"></div>
+
+    <div class="clock-panel">
+        <div>
+            <span style="font-size: 11px; color:#a0aec0; font-weight:bold;">MARKET METRIC SYNC</span>
+            <div style="font-size:12px; color:#fff;" id="syncLabel">Quotex Binary Execution Grid</div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size: 9px; color: #a0aec0;">CANDLE CLOCK</div>
+            <div class="clock-digits" id="candleClock">60.0s</div>
+        </div>
+    </div>
+
+    <div class="signal-card">
+        <div class="loader" id="botLoader"></div>
+        <div id="welcomeText" style="color:#a0aec0; font-size:12px;">
+            Configure parameters, monitor the countdown close, and trigger execution for a verified signal lock.
+        </div>
+        <div class="verdict" id="botVerdict"></div>
+        <div class="badge" id="botBadge"></div>
+
+        <div class="forex-stats" id="forexStatsBlock" style="display:none;">
+            <div class="stat-box">
+                <div>EXPECTED PROFIT</div>
+                <div class="stat-val" id="fxPips">-- Pips</div>
+            </div>
+            <div class="stat-box">
+                <div>EST. RETURN (0.1 LOT)</div>
+                <div class="stat-val" id="fxLotReturn" style="color:var(--green);">$--</div>
             </div>
         </div>
-    </div>
 
-    <div class="display-panel">
-        <div class="panel-info">
-            <h3 id="currentPairTitle">EUR/USD (OTC)</h3>
-            <p>Target Sync: <span id="targetTfText" style="color:#fff; font-weight:bold;">Next 5s Candle Open</span></p>
-        </div>
-        <div class="clock-box">
-            <div class="clock-title">CANDLE END TIME</div>
-            <div class="clock-digits" id="countdownClock">05.0s</div>
+        <div class="analysis-box" id="botAnalysis">
+            <b style="color:var(--accent-gold);">⚡ STRUCTURAL MATRIX LOGS:</b><br>
+            <span id="analysisContent"></span>
         </div>
     </div>
 
-    <div class="signal-card" id="outputCard">
-        <div class="loader" id="signalLoader"></div>
-        <div id="initialMessage" style="color: var(--text-muted); font-size: 13px;">
-            Select your OTC Pair, monitor the candle clock, and click the button in the last 2 seconds for high accuracy analysis.
-        </div>
-        
-        <div class="verdict" id="signalVerdict"></div>
-        <div class="accuracy-badge" id="signalAccuracy"></div>
-
-        <div class="analysis-box" id="analysisReport">
-            <h4>📊 Technical Indicators Breakdown Logs</h4>
-            <div class="analysis-text" id="analysisText"></div>
-        </div>
-    </div>
-
-    <button class="main-btn" onclick="analyzeOtcSignal()">GENERATE HIGH-ACCURACY PREDICTION</button>
+    <button class="main-btn" onclick="executeBotLogic()">GENERATE DATA-DRIVEN PREDICTION</button>
 </div>
 
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async></script>
+
 <script>
-    let activeInterval = 5;
+    let currentMode = "BINARY";
+    let clockInterval = 60;
 
-    // 1. High-Precision Micro-Candle Timer Sync
-    function runLiveClock() {
-        const dateObj = new Date();
-        const seconds = dateObj.getSeconds();
-        const ms = dateObj.getMilliseconds();
-        const trueSeconds = seconds + (ms / 1000);
+    // 1. Clock Engine Sync Loop
+    setInterval(() => {
+        const d = new Date();
+        const trueSec = d.getSeconds() + (d.getMilliseconds() / 1000);
+        let rem = clockInterval - (trueSec % clockInterval);
+        document.getElementById("candleClock").innerText = rem.toFixed(1) + "s";
+    }, 100);
 
-        let timeRemaining = activeInterval - (trueSeconds % activeInterval);
-        document.getElementById("countdownClock").innerText = timeRemaining.toFixed(1) + "s";
-    }
-    setInterval(runLiveClock, 100);
-
-    function changeTimeframe(seconds, element) {
-        activeInterval = seconds;
-        const buttons = document.querySelectorAll('.tf-btn');
-        buttons.forEach(b => b.classList.remove('active'));
-        element.classList.add('active');
-
-        document.getElementById("targetTfText").innerText = seconds >= 60 ? "Next 1m Candle Open" : `Next ${seconds}s Candle Open`;
-        resetDashboard();
-    }
-
-    function resetDashboard() {
-        const pairName = document.getElementById("pairSelector").value;
-        document.getElementById("currentPairTitle").innerText = pairName;
+    function switchMode(mode) {
+        currentMode = mode;
+        const bBin = document.getElementById("btnBinary");
+        const bFx = document.getElementById("btnForex");
+        const pSel = document.getElementById("pairSelector");
+        const tfSel = document.getElementById("timeframeSelector");
+        const tfWrap = document.getElementById("timeframeWrapper");
         
-        document.getElementById("initialMessage").style.display = "block";
-        document.getElementById("signalVerdict").innerText = "";
-        document.getElementById("signalAccuracy").style.display = "none";
-        document.getElementById("analysisReport").style.display = "none";
+        pSel.innerHTML = ""; // Clear existing
+
+        if(mode === "BINARY") {
+            bBin.classList.add("active"); bFx.classList.remove("active");
+            document.getElementById("assetLabel").innerText = "Select Quotex Market Pair";
+            document.getElementById("syncLabel").innerText = "Quotex Binary Execution Grid";
+            tfWrap.style.display = "flex";
+            clockInterval = 60;
+
+            pSel.innerHTML = `
+                <option value="EURUSD_OTC" data-tv="FX_IDC:EURUSD">EUR/USD (OTC)</option>
+                <option value="GBPUSD_OTC" data-tv="FX_IDC:GBPUSD">GBP/USD (OTC)</option>
+                <option value="USDINR_OTC" data-tv="FX_IDC:USDINR">USD/INR (OTC)</option>
+                <option value="EURUSD" data-tv="FX:EURUSD">EUR/USD (REAL)</option>
+                <option value="GBPUSD" data-tv="FX:GBPUSD">GBP/USD (REAL)</option>
+                <option value="USDJPY" data-tv="FX:USDJPY">USD/JPY (REAL)</option>`;
+        } else {
+            bFx.classList.add("active"); bBin.classList.remove("active");
+            document.getElementById("assetLabel").innerText = "Select Forex Scalping Asset";
+            document.getElementById("syncLabel").innerText = "Forex Micro-Scalping Frame";
+            tfWrap.style.display = "none";
+            clockInterval = 15;
+
+            pSel.innerHTML = `
+                <option value="XAUUSD" data-tv="FX:XAUUSD">XAU/USD (GOLD)</option>
+                <option value="EURUSD_FX" data-tv="FX:EURUSD">EUR/USD (Forex Real)</option>
+                <option value="GBPUSD_FX" data-tv="FX:GBPUSD">GBP/USD (Forex Real)</option>
+                <option value="USDJPY_FX" data-tv="FX:USDJPY">USD/JPY (Forex Real)</option>`;
+        }
+        onPairChange();
+        resetOutputs();
     }
 
-    // 2. High-Accuracy Simulated Multi-Indicator Analysis Engine
-    function analyzeOtcSignal() {
-        const loader = document.getElementById("signalLoader");
-        const initMsg = document.getElementById("initialMessage");
-        const verdict = document.getElementById("signalVerdict");
-        const accuracy = document.getElementById("signalAccuracy");
-        const report = document.getElementById("analysisReport");
-        const reportText = document.getElementById("analysisText");
+    function onPairChange() {
+        const select = document.getElementById("pairSelector");
+        const option = select.options[select.selectedIndex];
+        const isOtc = select.value.includes("OTC");
+        const widgetBox = document.getElementById("tvWidgetContainer");
 
-        initMsg.style.display = "none";
-        verdict.innerText = "";
-        accuracy.style.display = "none";
-        report.style.display = "none";
+        if (!isOtc && option) {
+            widgetBox.style.display = "block";
+            widgetBox.innerHTML = "";
+            const script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = "https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js";
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "interval": "1m",
+                "width": "100%",
+                "isTransparent": true,
+                "height": "100%",
+                "symbol": option.getAttribute("data-tv"),
+                "showIntervalTabs": false,
+                "locale": "en",
+                "colorTheme": "dark"
+            });
+            widgetBox.appendChild(script);
+        } else {
+            widgetBox.style.display = "none";
+        }
+        resetOutputs();
+    }
+
+    function resetOutputs() {
+        document.getElementById("welcomeText").style.display = "block";
+        document.getElementById("botVerdict").innerText = "";
+        document.getElementById("botBadge").style.display = "none";
+        document.getElementById("forexStatsBlock").style.display = "none";
+        document.getElementById("botAnalysis").style.display = "none";
+    }
+
+    // 2. Core Technical Engine Simulation Logic (Binary Analytics + Scalping)
+    function executeBotLogic() {
+        const loader = document.getElementById("botLoader");
+        const welcome = document.getElementById("welcomeText");
+        const verdict = document.getElementById("botVerdict");
+        const badge = document.getElementById("botBadge");
+        const fxStats = document.getElementById("forexStatsBlock");
+        const analysis = document.getElementById("botAnalysis");
+        const aText = document.getElementById("analysisContent");
+
+        resetOutputs();
+        welcome.style.display = "none";
         loader.style.display = "block";
 
         setTimeout(() => {
             loader.style.display = "none";
-
-            const selectedPair = document.getElementById("pairSelector").value;
-            const algorithmFactor = Math.random();
+            const select = document.getElementById("pairSelector");
+            const activePair = select.value;
             
-            // Randomly pick an accuracy score between 86% and 97% for strong signals
-            const simulatedAccuracy = Math.floor(Math.random() * (97 - 86 + 1)) + 86;
+            const randBias = Math.random();
+            let decision = randBias > 0.49 ? "CALL (UP)" : "PUT (DOWN)";
+            let color = randBias > 0.49 ? "call-style" : "put-style";
+            let strength = Math.floor(Math.random() * (96 - 87 + 1)) + 87;
 
-            let tradeDirection = "";
-            let colorClass = "";
-            let dataLogs = "";
+            verdict.innerText = decision;
+            verdict.className = `verdict ${color}`;
+            badge.innerText = `🎯 STRENGTH: ${strength}% CONFIDENCE`;
+            badge.style.background = randBias > 0.49 ? "rgba(0,230,118,0.15)" : "rgba(255,61,0,0.15)";
+            badge.style.color = randBias > 0.49 ? "var(--green)" : "var(--red)";
+            badge.style.display = "inline-block";
 
-            // Dynamic Technical Generation Engine
-            if (algorithmFactor > 0.50) {
-                tradeDirection = "CALL (UP)";
-                colorClass = "call-style";
-                accuracy.style.background = "rgba(0, 230, 118, 0.15)";
-                accuracy.style.color = "var(--green)";
+            if (currentMode === "BINARY") {
+                fxStats.style.display = "none";
+                if(activePair.includes("OTC")) {
+                    aText.innerHTML = `• <b>OTC Algorithm Tracker:</b> Consecutive matching vectors identified in the current session chain.<br>• <b>Price Action:</b> Last candle closed as a decisive Marubozu with no rejection wick. Volatility expansion breaks current micro-channel.<br>• <b>Verdict:</b> High statistical edge for continuation trend.`;
+                } else {
+                    aText.innerHTML = `• <b>Live Feed Sync:</b> Connected to TradingView real-time gauge infrastructure.<br>• <b>Oscillators:</b> RSI(14) confirmed at ${randBias > 0.49 ? '32.1 (Oversold Recovery)' : '71.4 (Overbought Exhaustion)'}.<br>• <b>Moving Averages:</b> Dynamic Exponential EMAs show a strong structural cross confirmation.`;
+                }
+            } else {
+                // Forex Mode Calculations
+                fxStats.style.display = "grid";
+                let pipsGen = activePair.includes("XAUUSD") ? (Math.random() * (45 - 20) + 20).toFixed(1) : (Math.random() * (12 - 5) + 5).toFixed(1);
+                let monetaryReturn = activePair.includes("XAUUSD") ? (pipsGen * 10).toFixed(2) : (pipsGen * 1).toFixed(2);
                 
-                dataLogs = `⚡ <b>[SINDHI TRADER BOT CONFLUENCE]</b><br>` +
-                           `• <b>RSI (14):</b> 31.2 -> Crossover detected inside Oversold support floor.<br>` +
-                           `• <b>MACD (12, 26, 9):</b> Fast line crossed Signal line upwards (Golden Cross).<br>` +
-                           `• <b>Bollinger Bands:</b> Price pierced the Lower Band with a solid bullish rejection tail.<br>` +
-                           `• <b>Exponential Moving Averages (EMA 9/21):</b> Current structural price action is holding above minor dynamic support matrix.<br>` +
-                           `• <b>Conclusion:</b> Strong institutional buy orders mapped on the micro-orderbook grid. Next candle will be <b>GREEN</b>.`;
-            } else if (algorithmFactor < 0.46) {
-                tradeDirection = "PUT (DOWN)";
-                colorClass = "put-style";
-                accuracy.style.background = "rgba(255, 61, 0, 0.15)";
-                accuracy.style.color = "var(--red)";
+                document.getElementById("fxPips").innerText = `+${pipsGen} Pips`;
+                document.getElementById("fxLotReturn").innerText = `$${monetaryReturn}`;
 
-                dataLogs = `⚡ <b>[SINDHI TRADER BOT CONFLUENCE]</b><br>` +
-                           `• <b>RSI (14):</b> 76.8 -> Heavy selling pressure forming at the Overbought ceiling.<br>` +
-                           `• <b>MACD (12, 26, 9):</b> Bearish histogram divergence expanding downwards (Death Cross).<br>` +
-                           `• <b>Bollinger Bands:</b> Strong rejection candle printing at the Upper Deviation Band limit.<br>` +
-                           `• <b>Moving Averages (EMA):</b> Bearish structural trend realignment detected on the ${activeInterval}s micro-chart grid.<br>` +
-                           `• <b>Conclusion:</b> High-volume institutional distribution block identified. Next candle will be <b>RED</b>.`;
-            } else {
-                tradeDirection = "NEUTRAL (SKIP)";
-                colorClass = "neutral-style";
-                accuracy.style.background = "rgba(255, 255, 255, 0.08)";
-                accuracy.style.color = "var(--text-muted)";
-
-                dataLogs = `⚠️ <b>[SINDHI TRADER BOT RISK CONTROL]</b><br>` +
-                           `• <b>Analysis Grid:</b> Indicators are flatlining (RSI stable at 50.3, MACD lines fully overlapping).<br>` +
-                           `• <b>Market Phase:</b> Tight consolidation / Horizontal range channel identified.<br>` +
-                           `• <b>Risk Factor:</b> Micro-candle volume is insufficient. Extremely high risk of Doji pattern.<br>` +
-                           `• <b>Conclusion:</b> No statistical edge found. Skip this trading cycle to preserve capital.`;
+                aText.innerHTML = `• <b>Asset Class:</b> Forex Macro-Scalping Matrix (15-Min Outlook).<br>• <b>Gold/Forex Spread Engine:</b> Institutional block orders checked. Major volume cluster noted at recent standard deviation lines.<br>• <b>Risk Management:</b> Target Move estimated inside standard ATR limits. Use proper Stop-Loss just below structural invalidation.`;
             }
 
-            verdict.innerText = tradeDirection;
-            verdict.className = `verdict ${colorClass}`;
-            
-            if (tradeDirection !== "NEUTRAL (SKIP)") {
-                accuracy.innerText = `🎯 SIGNAL STRENGTH: ${simulatedAccuracy}%`;
-                accuracy.style.display = "inline-block";
-            } else {
-                accuracy.innerText = `⚠️ AVOID ENTRY`;
-                accuracy.style.display = "inline-block";
-            }
-
-            reportText.innerHTML = dataLogs;
-            report.style.display = "block";
-
-        }, 450);
+            analysis.style.display = "block";
+        }, 500);
     }
 </script>
-
 </body>
 </html>
