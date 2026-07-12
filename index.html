@@ -325,7 +325,12 @@
     let currentMode = "BINARY";
     let clockInterval = 60;
     let isVipUnlocked = false; 
-    const SECRET_PROMO = "SINDHIVIP786"; // आपका लाइफटाइम प्रोमो कोड
+    const SECRET_PROMO = "SINDHIVIP786";
+
+    // 🔒 लॉक सिस्टम वैरियेबल्स
+    let lockedSignal = null;
+    let currentLockedAsset = ""; 
+    let lastGeneratedMinute = -1; // किस कैंडल मिनट चक्र में नया सिग्नल जनरेट हुआ
 
     function copyText(elementId) {
         const text = document.getElementById(elementId).innerText;
@@ -333,10 +338,15 @@
         alert("Copied successfully!");
     }
 
-    setInterval(() => {
+    // ⏱️ टाइमर फंक्शन
+    function getRemainingTime() {
         const d = new Date();
         const trueSec = d.getSeconds() + (d.getMilliseconds() / 1000);
-        let rem = clockInterval - (trueSec % clockInterval);
+        return clockInterval - (trueSec % clockInterval);
+    }
+
+    setInterval(() => {
+        let rem = getRemainingTime();
         document.getElementById("candleClock").innerText = rem.toFixed(1) + "s";
     }, 100);
 
@@ -357,7 +367,6 @@
         const traderId = document.getElementById("traderIdInput").value.trim();
         const txId = document.getElementById("paymentTxInput").value.trim();
 
-        // 1. प्रोमो कोड बॉक्स की चेकिंग
         if (promoInput === SECRET_PROMO) {
             isVipUnlocked = true;
             closeVipGate();
@@ -369,7 +378,6 @@
             return;
         }
 
-        // 2. एफीलिएट और पेमेंट वेरिफिकेशन चेकिंग
         if (!traderId && !txId) {
             alert("कृपया प्रोमो कोड दर्ज करें, कोटेक्स आईडी भरें या $20 पेमेंट की TxID भरें!");
             return;
@@ -421,8 +429,10 @@
                 <option value="XAUUSD" data-tv="FX:XAUUSD">XAU/USD (GOLD)</option>
                 <option value="EURUSD_FX" data-tv="FX:EURUSD">EUR/USD (Forex Real)</option>
                 <option value="GBPUSD_FX" data-tv="FX:GBPUSD">GBP/USD (Forex Real)</option>
-                <option value="USDJPY_FX" data-tv="FX:USDJPY">USD/JPY (Forex Real)</option>`;
+                <option value="USDJPY_FX" data-tv="FX:USDJPY">USD/JPY (REAL)</option>`;
         }
+        lockedSignal = null; 
+        lastGeneratedMinute = -1;
         onPairChange();
         resetOutputs();
     }
@@ -458,6 +468,10 @@
     }
 
     function resetOutputs() {
+        const select = document.getElementById("pairSelector");
+        if (lockedSignal && currentLockedAsset === select.value) {
+            return; 
+        }
         document.getElementById("welcomeText").style.display = "block";
         document.getElementById("botVerdict").innerText = "";
         document.getElementById("botBadge").style.display = "none";
@@ -474,46 +488,117 @@
         const analysis = document.getElementById("botAnalysis");
         const aText = document.getElementById("analysisContent");
 
-        resetOutputs();
+        const select = document.getElementById("pairSelector");
+        const activePair = select.value;
+        
+        const d = new Date();
+        const currentMinute = d.getMinutes();
+        const remSeconds = getRemainingTime();
+
+        // 🎯 बोट यह तय करेगा कि वह किस चक्र (Cycle Hour/Minute) के लिए प्रेडिक्शन दे रहा है
+        // अगर 15 सेकंड से कम बचे हैं, तो यह अगली आने वाली कैंडल का चक्र (currentMinute + 1) कहलाएगा।
+        let targetCycle = (remSeconds <= 15) ? (currentMinute + 1) % 60 : currentMinute;
+
+        // 🔒 अगर उसी चक्र और उसी असेट का सिग्नल पहले से लॉक है, तो बार-बार बदलने मत दो!
+        if (lockedSignal && currentLockedAsset === activePair && lastGeneratedMinute === targetCycle) {
+            welcome.style.display = "none";
+            loader.style.display = "block";
+            verdict.innerText = "";
+            badge.style.display = "none";
+            fxStats.style.display = "none";
+            analysis.style.display = "none";
+
+            setTimeout(() => {
+                loader.style.display = "none";
+                verdict.innerText = lockedSignal.decision;
+                verdict.className = `verdict ${lockedSignal.color}`;
+                badge.innerText = lockedSignal.badgeText;
+                badge.style.background = lockedSignal.badgeBg;
+                badge.style.color = lockedSignal.badgeColor;
+                badge.style.display = "inline-block";
+
+                if (currentMode === "BINARY") {
+                    fxStats.style.display = "none";
+                } else {
+                    fxStats.style.display = "grid";
+                    document.getElementById("fxPips").innerText = lockedSignal.fxPips;
+                    document.getElementById("fxLotReturn").innerText = lockedSignal.fxReturn;
+                }
+                aText.innerHTML = lockedSignal.analysisText;
+                analysis.style.display = "block";
+            }, 400);
+            return;
+        }
+
+        // 🆕 अगर 15s की थ्रेसहोल्ड पार हो गई है या असेट नया है, तो फ्रेश एडवांस सिग्नल जनरेट करें
         welcome.style.display = "none";
         loader.style.display = "block";
+        verdict.innerText = "";
+        badge.style.display = "none";
+        fxStats.style.display = "none";
+        analysis.style.display = "none";
 
         setTimeout(() => {
             loader.style.display = "none";
-            const select = document.getElementById("pairSelector");
-            const activePair = select.value;
             
             const randBias = Math.random();
             let decision = randBias > 0.49 ? "CALL (UP)" : "PUT (DOWN)";
             let color = randBias > 0.49 ? "call-style" : "put-style";
             let strength = Math.floor(Math.random() * (96 - 87 + 1)) + 87;
 
-            verdict.innerText = decision;
+            // 📢 यूज़र को बताने के लिए कि यह अगली कैंडल का एडवांस सिग्नल है
+            let prefix = (remSeconds <= 15) ? "NEXT 1-MIN: " : "";
+            let finalDecision = prefix + decision;
+
+            let badgeText = `🎯 STRENGTH: ${strength}% CONFIDENCE`;
+            let badgeBg = randBias > 0.49 ? "rgba(0,230,118,0.15)" : "rgba(255,61,0,0.15)";
+            let badgeColor = randBias > 0.49 ? "var(--green)" : "var(--red)";
+
+            let fxPips = "-- Pips";
+            let fxReturn = "$--";
+            let analysisText = "";
+
+            if (currentMode === "BINARY") {
+                let note = (remSeconds <= 15) ? `<b style="color:var(--accent-gold);">⚡ NEXT CANDLE ADVANCE LOCKED:</b> तैयारी करो भाई, 15 सेकंड के अंदर ट्रेड प्लेस करें!<br>` : "";
+                if(activePair.includes("OTC")) {
+                    analysisText = note + `• <b>OTC Algorithm Tracker:</b> Matching volume vectors identified on current cycle.<br>• <b>Price Action:</b> Rejection at psychological level. Candlestick behavior favors dynamic momentum continuity.`;
+                } else {
+                    analysisText = note + `• <b>Live Feed Sync:</b> Connected to TradingView gauge data node.<br>• <b>Oscillators:</b> RSI(14) matrix confirms dynamic support baseline room.<br>• <b>Moving Averages:</b> Structural EMAs suggest directional confluence matching.`;
+                }
+            } else {
+                let pipsGen = activePair.includes("XAUUSD") ? (Math.random() * (45 - 20) + 20).toFixed(1) : (Math.random() * (12 - 5) + 5).toFixed(1);
+                let monetaryReturn = activePair.includes("XAUUSD") ? (pipsGen * 10).toFixed(2) : (pipsGen * 1).toFixed(2);
+                fxPips = `+${pipsGen} Pips`;
+                fxReturn = `$${monetaryReturn}`;
+
+                analysisText = `• <b>Asset Class:</b> Forex Multi-Confluence Grid (15-Min Outlook).<br>• <b>Volume Spread Analysis:</b> Institutional liquidity zones mapped near current boundaries.<br>• <b>Risk Control:</b> Set stop-loss orders outside immediate deviation bands.`;
+            }
+
+            // इस सिग्नल को इस विशिष्ट चक्र (targetCycle) के लिए लॉक कर दें
+            lockedSignal = {
+                decision: finalDecision, color, badgeText, badgeBg, badgeColor, fxPips, fxReturn, analysisText
+            };
+            lastGeneratedMinute = targetCycle;
+            currentLockedAsset = activePair;
+
+            // आउटपुट शो करें
+            verdict.innerText = finalDecision;
             verdict.className = `verdict ${color}`;
-            badge.innerText = `🎯 STRENGTH: ${strength}% CONFIDENCE`;
-            badge.style.background = randBias > 0.49 ? "rgba(0,230,118,0.15)" : "rgba(255,61,0,0.15)";
-            badge.style.color = randBias > 0.49 ? "var(--green)" : "var(--red)";
+            badge.innerText = badgeText;
+            badge.style.background = badgeBg;
+            badge.style.color = badgeColor;
             badge.style.display = "inline-block";
 
             if (currentMode === "BINARY") {
                 fxStats.style.display = "none";
-                if(activePair.includes("OTC")) {
-                    aText.innerHTML = `• <b>OTC Algorithm Tracker:</b> Matching volume vectors identified on current cycle.<br>• <b>Price Action:</b> Rejection at psychological level. Candlestick behavior favors dynamic momentum continuity.`;
-                } else {
-                    aText.innerHTML = `• <b>Live Feed Sync:</b> Connected to TradingView gauge data node.<br>• <b>Oscillators:</b> RSI(14) matrix confirms dynamic support baseline room.<br>• <b>Moving Averages:</b> Structural EMAs suggest directional confluence matching.`;
-                }
             } else {
                 fxStats.style.display = "grid";
-                let pipsGen = activePair.includes("XAUUSD") ? (Math.random() * (45 - 20) + 20).toFixed(1) : (Math.random() * (12 - 5) + 5).toFixed(1);
-                let monetaryReturn = activePair.includes("XAUUSD") ? (pipsGen * 10).toFixed(2) : (pipsGen * 1).toFixed(2);
-                
-                document.getElementById("fxPips").innerText = `+${pipsGen} Pips`;
-                document.getElementById("fxLotReturn").innerText = `$${monetaryReturn}`;
-
-                aText.innerHTML = `• <b>Asset Class:</b> Forex Multi-Confluence Grid (15-Min Outlook).<br>• <b>Volume Spread Analysis:</b> Institutional liquidity zones mapped near current boundaries.<br>• <b>Risk Control:</b> Set stop-loss orders outside immediate deviation bands.`;
+                document.getElementById("fxPips").innerText = fxPips;
+                document.getElementById("fxLotReturn").innerText = fxReturn;
             }
-
+            aText.innerHTML = analysisText;
             analysis.style.display = "block";
+
         }, 500);
     }
 </script>
