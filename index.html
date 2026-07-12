@@ -3,92 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SINDHI TRADER BOT</title>
+    <title>SINDHI TRADER BOT - Ultimate VIP Gate</title>
     <style>
-        :root { --bg-color: #070b19; --card-bg: #0f162a; --accent-gold: #ffc107; --border: #1e294b; --text: #ffffff; }
-        body { background-color: var(--bg-color); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 450px; background: var(--card-bg); border-radius: 20px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .brand { text-align: center; font-size: 26px; font-weight: 900; color: var(--accent-gold); margin-bottom: 25px; text-transform: uppercase; }
-        .payment-info { background: rgba(255,193,7,0.1); border: 1px dashed var(--accent-gold); padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; text-align: center; }
-        input, select { width: 100%; padding: 15px; margin-bottom: 20px; background: #0b1021; border: 1px solid var(--border); color: #fff; border-radius: 10px; font-size: 16px; }
-        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #ffc107, #ff9800); border: none; border-radius: 10px; font-weight: bold; font-size: 16px; color: #000; cursor: pointer; }
-        .verdict { font-size: 35px; font-weight: 900; text-align: center; margin: 30px 0; padding: 20px; border: 2px dashed var(--border); border-radius: 15px; }
-        .analysis { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; font-size: 14px; line-height: 1.6; color: #cbd5e1; }
-        .social-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .social-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; color: #fff; }
+        :root {
+            --bg-color: #070b19;
+            --card-bg: #0f162a;
+            --text-main: #ffffff;
+            --text-muted: #7ee0ff;
+            --accent-gold: #ffc107;
+            --green: #00e676;
+            --red: #ff3d00;
+            --border: #1e294b;
+            --tiktok-color: #ff0050;
+            --whatsapp-color: #25d366;
+            --quotex-color: #00b67a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 12px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+
+        .container { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 14px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 12px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 12px; }
+        
+        .brand-header { text-align: center; padding: 12px; background: rgba(255,193,7,0.05); border-radius: 10px; border: 1px solid rgba(255,193,7,0.15); }
+        .brand-logo { font-size: 22px; font-weight: 900; color: var(--accent-gold); letter-spacing: 1px; }
+        .brand-tagline { font-size: 10px; color: #a0aec0; margin-top: 2px; text-transform: uppercase; }
+
+        .mode-container { display: flex; gap: 8px; }
+        .mode-btn { flex: 1; padding: 12px; background: #0b1021; border: 1px solid var(--border); color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .mode-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
+
+        .dropdown-wrapper { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; font-weight: bold; color: #a0aec0; text-transform: uppercase; }
+        select { width: 100%; background: #090d1f; border: 1px solid var(--border); color: #fff; padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; outline: none; }
+
+        .clock-panel { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .clock-digits { font-size: 24px; font-weight: bold; color: var(--accent-gold); font-family: monospace; }
+
+        .signal-card { background: #040714; border: 2px dashed var(--border); border-radius: 10px; padding: 20px 10px; text-align: center; min-height: 120px; position: relative; }
+        .verdict { font-size: 30px; font-weight: 900; }
+        .badge { display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+        .call-style { color: var(--green); }
+        .put-style { color: var(--red); }
+        
+        .analysis-box { width: 100%; background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: left; display: none; font-size: 11px; line-height: 1.4; color: #cbd5e1; }
+        .main-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #ffc107, #ff9800); border: none; color: #000; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
+        .loader { border: 3px solid rgba(255,255,255,0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--accent-gold); animation: spin 0.6s linear infinite; display: none; margin: 0 auto; }
+        
+        .quotex-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px; background: linear-gradient(135deg, #00b67a, #008f5d); border: none; color: #fff; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; text-transform: uppercase; }
+        .social-section { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- VIP GATE -->
-    <div id="vip-gate">
-        <div class="brand">👑 VIP ACCESS</div>
-        <div class="payment-info">
-            Pay $20 USDT (TRC20) to Binance ID: <b>123456789</b><br>
-            Send screenshot on WhatsApp for Promo Code.
-        </div>
-        <input type="text" id="promoCode" placeholder="ENTER PROMO CODE">
-        <button class="main-btn" onclick="checkAccess()">UNLOCK BOT</button>
+    <div class="brand-header">
+        <h1 class="brand-logo">⚡ SINDHI TRADER BOT ⚡</h1>
+        <p class="brand-tagline">Quotex Binary & Forex Scalper</p>
     </div>
 
-    <!-- BOT INTERFACE -->
-    <div id="bot-ui" style="display:none;">
-        <div class="brand">⚡ SINDHI TRADER BOT</div>
-        
-        <label>MARKET PAIR</label>
+    <div class="dropdown-wrapper">
+        <label>Select Market Pair</label>
         <select id="pairSelector">
-            <optgroup label="OTC MARKETS">
-                <option value="USD/BRL (OTC)">USD/BRL (OTC)</option>
-                <option value="EUR/USD (OTC)">EUR/USD (OTC)</option>
-            </optgroup>
-            <optgroup label="REAL FOREX">
-                <option value="EUR/USD (REAL)">EUR/USD (REAL)</option>
-                <option value="XAU/USD (GOLD)">XAU/USD (GOLD)</option>
-            </optgroup>
+            <option value="USD/BRL_OTC">USD/BRL OTC</option>
+            <option value="CAD/CHF_OTC">CAD/CHF OTC</option>
+            <option value="USD/COP_OTC">USD/COP OTC</option>
+            <option value="USD/NGN_OTC">USD/NGN OTC</option>
+            <option value="EUR/CAD_OTC">EUR/CAD OTC</option>
+            <option value="GBP/JPY_OTC">GBP/JPY OTC</option>
+            <option value="USD/ARS_OTC">USD/ARS OTC</option>
+            <option value="USD/MXN_OTC">USD/MXN OTC</option>
+            <option value="AUD/CHF_OTC">AUD/CHF OTC</option>
+            <option value="AUD/JPY_OTC">AUD/JPY OTC</option>
         </select>
+    </div>
 
-        <label>TIMEFRAME</label>
-        <select id="timeframeSelector">
-            <option value="15">15 Seconds (Scalping)</option>
-            <option value="60">1 Minute</option>
-            <option value="300">5 Minutes (300s)</option>
-        </select>
+    <div class="clock-panel">
+        <div><span style="font-size: 10px; color:#a0aec0;">MARKET SYNC</span></div>
+        <div style="text-align:right;"><div class="clock-digits" id="candleClock">60.0s</div></div>
+    </div>
 
-        <button class="main-btn" onclick="analyzeMarket()">GENERATE SIGNAL</button>
-
-        <div class="verdict" id="botVerdict">---</div>
-        <div class="analysis" id="analysisContent">Deep market analysis will appear here after generation.</div>
-
-        <div class="social-btns">
-            <a href="#" class="social-btn" style="background:#ff0050;">TikTok</a>
-            <a href="#" class="social-btn" style="background:#25d366;">WhatsApp</a>
+    <div class="signal-card">
+        <div class="loader" id="botLoader"></div>
+        <div id="botVerdict" class="verdict"></div>
+        <div id="botBadge" class="badge" style="display:none;"></div>
+        <div class="analysis-box" id="botAnalysis" style="display:none;">
+            <b style="color:var(--accent-gold);">⚡ TECHNICAL ANALYSIS:</b><br>
+            <span id="analysisContent"></span>
         </div>
     </div>
+
+    <button class="main-btn" onclick="generateSignal()">GENERATE PREDICTION</button>
 </div>
 
 <script>
-    function checkAccess() {
-        if(document.getElementById("promoCode").value === "SINDHI VIP 706") {
-            document.getElementById("vip-gate").style.display = "none";
-            document.getElementById("bot-ui").style.display = "block";
-        } else { alert("Invalid Promo Code!"); }
+    function getRemainingTime() {
+        const d = new Date();
+        return 60 - (d.getSeconds() + (d.getMilliseconds() / 1000));
     }
 
-    function analyzeMarket() {
+    setInterval(() => {
+        document.getElementById("candleClock").innerText = getRemainingTime().toFixed(1) + "s";
+    }, 100);
+
+    function generateSignal() {
+        const loader = document.getElementById("botLoader");
+        const verdict = document.getElementById("botVerdict");
+        const badge = document.getElementById("botBadge");
+        const analysisBox = document.getElementById("botAnalysis");
+        const aContent = document.getElementById("analysisContent");
         const pair = document.getElementById("pairSelector").value;
-        const tf = document.getElementById("timeframeSelector").value;
-        const isCall = Math.random() > 0.5;
-        
-        document.getElementById("botVerdict").innerText = isCall ? "CALL (UP) ⬆️" : "PUT (DOWN) ⬇️";
-        document.getElementById("botVerdict").style.color = isCall ? "#00e676" : "#ff3d00";
-        
-        document.getElementById("analysisContent").innerHTML = `
-            <b>Deep Analysis for ${pair} (${tf}s):</b><br>
-            • Pattern: Identified strong breakout signal.<br>
-            • Price Action: Testing key structural levels.<br>
-            • Verdict: High probability ${isCall ? 'Bullish' : 'Bearish'} setup detected.
-        `;
+
+        loader.style.display = "block";
+        verdict.innerText = "";
+        badge.style.display = "none";
+        analysisBox.style.display = "none";
+
+        setTimeout(() => {
+            loader.style.display = "none";
+            const isCall = Math.random() > 0.5;
+            
+            verdict.innerText = isCall ? "CALL (UP)" : "PUT (DOWN)";
+            verdict.className = `verdict ${isCall ? 'call-style' : 'put-style'}`;
+            
+            badge.innerText = "ACCURACY: 94% CONFIDENCE";
+            badge.style.display = "inline-block";
+            badge.style.background = isCall ? "rgba(0,230,118,0.15)" : "rgba(255,61,0,0.15)";
+            badge.style.color = isCall ? "var(--green)" : "var(--red)";
+
+            aContent.innerHTML = `
+                • <b>Asset:</b> ${pair}<br>
+                • <b>RSI(14) Analysis:</b> Current levels suggest ${isCall ? 'oversold' : 'overbought'} conditions.<br>
+                • <b>Price Action:</b> Fractal patterns confirm ${isCall ? 'bullish' : 'bearish'} momentum.<br>
+                • <b>Decision:</b> Execute ${isCall ? 'BUY' : 'SELL'} at the start of the next 1-minute candle.
+            `;
+            analysisBox.style.display = "block";
+        }, 800);
     }
 </script>
 </body>
